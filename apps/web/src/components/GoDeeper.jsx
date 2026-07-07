@@ -15,6 +15,12 @@ function GoDeeper({ scrollProgress }) {
     [0, 0, 0, 1, 1, 0]
   );
 
+  const hintOpacity = useTransform(
+    scrollProgress,
+    [0, 0.26, 0.34, 0.46, 0.56],
+    [0, 0, 1, 1, 0]
+  );
+
   return (
     <div
       data-go-deeper-layer
@@ -45,6 +51,19 @@ function GoDeeper({ scrollProgress }) {
       >
         Into the Unknown
       </motion.p>
+
+      <motion.div
+        className="abyss-scroll-hint absolute bottom-8 left-1/2 sm:bottom-10"
+        style={{ opacity: hintOpacity }}
+        aria-hidden="true"
+      >
+        <span className="abyss-scroll-hint__text">
+          Scroll to go deeper
+        </span>
+        <span className="abyss-scroll-hint__mouse">
+          <span className="abyss-scroll-hint__dot" />
+        </span>
+      </motion.div>
     </div>
   );
 }

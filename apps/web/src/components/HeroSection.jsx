@@ -119,13 +119,25 @@ function HeroSection({ uiOpacity = 1, overlayOpacity = 0.1 }) {
           </p>
 
           <div
-            className="absolute bottom-10 left-5 right-5 max-w-full hero-anim hero-fade sm:bottom-14 sm:left-auto sm:right-10 sm:max-w-[280px] md:right-14"
+            className="absolute bottom-20 left-5 right-5 max-w-full hero-anim hero-fade sm:bottom-14 sm:left-auto sm:right-10 sm:max-w-[280px] md:right-14"
             style={{ animationDelay: '0.85s' }}
           >
             <p className="text-xs sm:text-sm text-white/80 leading-relaxed">
               We explore and protect the ecosystems that keep our blue planet
               alive.
             </p>
+          </div>
+
+          <div
+            className="abyss-scroll-hint absolute bottom-7 left-1/2 sm:bottom-12"
+            aria-hidden="true"
+          >
+            <span className="abyss-scroll-hint__text">
+              Scroll to continue
+            </span>
+            <span className="abyss-scroll-hint__mouse">
+              <span className="abyss-scroll-hint__dot" />
+            </span>
           </div>
         </motion.div>
       </section>
