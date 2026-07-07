@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-const LOCAL_PREVIEW_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
 function GlobalGlowCursor() {
   const cursorRef = useRef(null);
   const frameRef = useRef(null);
@@ -12,12 +10,9 @@ function GlobalGlowCursor() {
     const finePointer = window.matchMedia('(any-pointer: fine)');
     const coarsePointer = window.matchMedia('(pointer: coarse)');
     const hoverPointer = window.matchMedia('(hover: hover)');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const isLocalPreview = LOCAL_PREVIEW_HOSTS.has(window.location.hostname);
     const touchExperience = coarsePointer.matches || !hoverPointer.matches;
-    const reduceAnimations = reducedMotion.matches && !isLocalPreview;
 
-    if (!cursor || touchExperience || !finePointer.matches || reduceAnimations) return undefined;
+    if (!cursor || touchExperience || !finePointer.matches) return undefined;
 
     let currentX = -60;
     let currentY = -60;

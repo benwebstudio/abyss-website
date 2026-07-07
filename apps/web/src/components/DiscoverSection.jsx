@@ -48,8 +48,6 @@ const smoothstep = (value) => {
   return t * t * (3 - 2 * t);
 };
 
-const LOCAL_PREVIEW_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
 const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
   const sectionRef = useRef(null);
   const stageRef = useRef(null);
@@ -66,13 +64,11 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
     const hoverPointer = window.matchMedia('(hover: hover)');
     const coarsePointer = window.matchMedia('(pointer: coarse)');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const isLocalPreview = LOCAL_PREVIEW_HOSTS.has(window.location.hostname);
     const touchExperience = coarsePointer.matches || !hoverPointer.matches;
     const scannerEnabled =
       finePointer.matches &&
       hoverPointer.matches &&
-      !touchExperience &&
-      (!reducedMotion.matches || isLocalPreview);
+      !touchExperience;
     let scrollFrame = null;
     let cursorFrame = null;
     let currentX = -80;
@@ -86,7 +82,7 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
       const progress = smoothstep(
         clamp((window.innerHeight - contactTop) / (window.innerHeight * 0.78))
       );
-      const reduceAnimations = reducedMotion.matches && !isLocalPreview;
+      const reduceAnimations = reducedMotion.matches;
 
       stage.style.opacity = String(1 - progress);
       stage.style.filter = reduceAnimations ? 'none' : `blur(${progress * 8}px)`;
@@ -162,7 +158,7 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
             const isTablet = window.matchMedia('(min-width: 640px)').matches;
             const rowIndex = isTablet ? Math.floor(index / 2) : index;
             const withinRowIndex = isTablet ? index % 2 : 0;
-            const delay = reducedMotion.matches && !isLocalPreview
+            const delay = reducedMotion.matches
               ? 0
               : isTablet
                 ? rowIndex * 120 + withinRowIndex * 130

@@ -196,6 +196,7 @@
     letter-spacing: 0.3em;
     text-transform: uppercase;
     text-shadow: 0 0 13px rgba(125, 211, 252, 0.74);
+    animation: abyssScrollTextPulse 2.35s ease-in-out infinite;
   }
 
   .abyss-scroll-hint__mouse {
@@ -209,6 +210,7 @@
     background: rgba(224, 242, 254, 0.065);
     padding-top: 0.28rem;
     box-shadow: 0 0 22px rgba(34, 211, 238, 0.34);
+    animation: abyssScrollMouseFloat 1.9s ease-in-out infinite;
   }
 
   .abyss-scroll-hint__dot {
@@ -217,7 +219,7 @@
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 0 10px rgba(103, 232, 249, 1);
-    animation: abyssScrollDot 1.65s ease-in-out infinite;
+    animation: abyssScrollDot 1.35s ease-in-out infinite;
   }
 
   .discover-card[data-revealed="true"] {
@@ -299,11 +301,35 @@
     0%,
     100% {
       transform: translateY(0);
-      opacity: 0.72;
+      opacity: 0.65;
     }
     52% {
-      transform: translateY(0.68rem);
+      transform: translateY(0.92rem);
       opacity: 1;
+    }
+  }
+
+  @keyframes abyssScrollMouseFloat {
+    0%,
+    100% {
+      transform: translateY(0);
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.24);
+    }
+    50% {
+      transform: translateY(0.22rem);
+      box-shadow: 0 0 30px rgba(34, 211, 238, 0.46);
+    }
+  }
+
+  @keyframes abyssScrollTextPulse {
+    0%,
+    100% {
+      opacity: 0.68;
+      text-shadow: 0 0 10px rgba(125, 211, 252, 0.55);
+    }
+    50% {
+      opacity: 0.9;
+      text-shadow: 0 0 18px rgba(125, 211, 252, 0.9);
     }
   }
 
@@ -329,8 +355,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hero-anim,
-    .hero-zoom,
-    .abyss-scroll-hint__dot {
+    .hero-zoom {
       animation: none;
       opacity: 1;
     }

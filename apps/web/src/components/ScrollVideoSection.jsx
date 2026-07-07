@@ -5,7 +5,6 @@ const TRANSITION_OVERLAP = '100vh';
 const TRANSITION_FADE_AHEAD = 1.26;
 const END_FRAME_HOLD_MS = 900;
 const FINAL_FRAME_SHADE = 0.24;
-const LOCAL_PREVIEW_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 
 const TEXT_CUES = [
   { text: '95% remains unexplored', start: 0.07, end: 0.33 },
@@ -67,11 +66,10 @@ function ScrollVideoSection() {
     }
 
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    // The in-app localhost preview reports reduced motion by default. Keep the
-    // production accessibility fallback, but allow the requested cinematic
-    // autoplay while the site is being reviewed locally.
-    const isLocalPreview = LOCAL_PREVIEW_HOSTS.has(window.location.hostname);
-    reducedMotionRef.current = motionQuery.matches && !isLocalPreview;
+    // Keep the cinematic experience consistent in production. Some browsers
+    // report reduced motion broadly, which previously disabled the video and
+    // cursors on the live site. Touch/mobile still avoids custom cursors.
+    reducedMotionRef.current = false;
     let playRequested = false;
     let isNavigationBypass = false;
 
@@ -409,8 +407,7 @@ function ScrollVideoSection() {
     const startCinematic = () => {
       if (
         hasStartedRef.current ||
-        hasFinishedRef.current ||
-        reducedMotionRef.current
+        hasFinishedRef.current
       ) {
         return;
       }
@@ -475,14 +472,7 @@ function ScrollVideoSection() {
       // Never let the video layer travel into view with its section while the
       // GO DEEPER transition is active. In reduced-motion mode it only releases
       // after the static-frame section has completely left the viewport.
-      if (
-        reducedMotionRef.current &&
-        sectionTop <= -section.offsetHeight
-      ) {
-        pinLastFrameToSection();
-      } else {
-        keepViewportFixed();
-      }
+      keepViewportFixed();
 
       const transitionOpacity = smoothstep(
         (viewportHeight * TRANSITION_FADE_AHEAD - sectionTop) /
@@ -502,14 +492,6 @@ function ScrollVideoSection() {
       }
 
       viewport.style.opacity = '1';
-      if (reducedMotionRef.current) {
-        video.pause();
-        if (sectionTop < 0) {
-          renderDiscoverBlend(clamp(-sectionTop / viewportHeight));
-        }
-        return;
-      }
-
       startCinematic();
     };
 
@@ -564,13 +546,8 @@ function ScrollVideoSection() {
     };
 
     const handleMotionPreferenceChange = (event) => {
-      const shouldReduceMotion = event.matches && !isLocalPreview;
-      reducedMotionRef.current = shouldReduceMotion;
-      if (shouldReduceMotion && hasStartedRef.current && !hasFinishedRef.current) {
-        finishCinematic();
-      } else {
-        requestTransitionUpdate();
-      }
+      reducedMotionRef.current = false;
+      requestTransitionUpdate();
     };
 
     window.addEventListener('scroll', requestTransitionUpdate, { passive: true });
