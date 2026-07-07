@@ -1,0 +1,349 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,500;1,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 194 100% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 194 100% 42%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 194 100% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 194 100% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground;
+    background: #000;
+    font-family: "Inter", sans-serif;
+    overflow-x: clip;
+    overscroll-behavior: none;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+  html {
+    scroll-behavior: smooth;
+    background: #000;
+    scrollbar-gutter: stable;
+  }
+
+  #root {
+    min-height: 100%;
+    background: #000;
+  }
+
+  body.global-glow-cursor-active,
+  body.global-glow-cursor-active *,
+  body.global-glow-cursor-active button,
+  body.global-glow-cursor-active a,
+  body.global-glow-cursor-active input,
+  body.global-glow-cursor-active textarea,
+  body.global-glow-cursor-active select,
+  body.global-glow-cursor-active [role="button"] {
+    cursor: none !important;
+  }
+}
+
+@layer components {
+  .abyss-button {
+    border: 1px solid rgba(103, 232, 249, 0.42);
+    background: linear-gradient(
+      145deg,
+      rgba(8, 29, 47, 0.82),
+      rgba(2, 11, 24, 0.84)
+    );
+    color: rgba(255, 255, 255, 0.96);
+    box-shadow:
+      0 0 22px rgba(14, 165, 233, 0.13),
+      inset 0 1px 0 rgba(207, 250, 254, 0.14);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    transition:
+      border-color 400ms ease,
+      background-color 400ms ease,
+      box-shadow 400ms ease,
+      color 400ms ease,
+      transform 400ms ease;
+  }
+
+  .abyss-button:hover {
+    border-color: rgba(165, 243, 252, 0.7);
+    background: linear-gradient(
+      145deg,
+      rgba(11, 42, 65, 0.9),
+      rgba(3, 18, 34, 0.9)
+    );
+    color: #fff;
+    box-shadow:
+      0 0 30px rgba(34, 211, 238, 0.22),
+      inset 0 1px 0 rgba(207, 250, 254, 0.22);
+  }
+
+  .abyss-button:focus-visible {
+    outline: none;
+    border-color: rgba(207, 250, 254, 0.85);
+    box-shadow:
+      0 0 0 1px rgba(165, 243, 252, 0.55),
+      0 0 30px rgba(34, 211, 238, 0.22);
+  }
+
+  .abyss-field {
+    appearance: none;
+    border: 1px solid rgba(103, 232, 249, 0.25);
+    background: linear-gradient(
+      145deg,
+      rgba(4, 20, 35, 0.76),
+      rgba(1, 8, 19, 0.78)
+    );
+    color: rgba(255, 255, 255, 0.95);
+    outline: none;
+    box-shadow: inset 0 1px 0 rgba(207, 250, 254, 0.06);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .abyss-field::placeholder {
+    color: rgba(255, 255, 255, 0.46);
+  }
+
+  .abyss-field:hover {
+    border-color: rgba(103, 232, 249, 0.38);
+  }
+
+  .abyss-field:focus {
+    border-color: rgba(165, 243, 252, 0.68);
+    background: linear-gradient(
+      145deg,
+      rgba(7, 31, 49, 0.88),
+      rgba(2, 13, 27, 0.9)
+    );
+    box-shadow:
+      0 0 25px rgba(34, 211, 238, 0.13),
+      inset 0 1px 0 rgba(207, 250, 254, 0.1);
+  }
+
+  .abyss-eyebrow {
+    color: rgba(255, 255, 255, 0.56);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.34em;
+  }
+
+  .abyss-scroll-hint {
+    display: flex;
+    transform: translate3d(-50%, 8px, 0);
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    white-space: nowrap;
+    transition:
+      opacity 700ms ease,
+      transform 700ms ease;
+  }
+
+  .abyss-scroll-hint.relative {
+    transform: none;
+  }
+
+  .abyss-scroll-hint__text {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.58rem;
+    font-weight: 650;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-shadow: 0 0 13px rgba(125, 211, 252, 0.74);
+  }
+
+  .abyss-scroll-hint__mouse {
+    display: flex;
+    height: 1.85rem;
+    width: 1rem;
+    align-items: flex-start;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(224, 242, 254, 0.68);
+    background: rgba(224, 242, 254, 0.065);
+    padding-top: 0.28rem;
+    box-shadow: 0 0 22px rgba(34, 211, 238, 0.34);
+  }
+
+  .abyss-scroll-hint__dot {
+    height: 0.24rem;
+    width: 0.24rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 10px rgba(103, 232, 249, 1);
+    animation: abyssScrollDot 1.65s ease-in-out infinite;
+  }
+
+  .discover-card[data-revealed="true"] {
+    border-color: rgba(165, 243, 252, 0.55);
+    box-shadow:
+      0 24px 74px rgba(0, 0, 0, 0.62),
+      0 0 34px rgba(0, 164, 255, 0.17),
+      inset 0 1px 0 rgba(210, 247, 255, 0.22);
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__glow {
+    transform: scale(1.1);
+    background: rgba(103, 232, 249, 0.15);
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__image {
+    transform: scale(1.1);
+    filter: brightness(1) saturate(1.1) blur(0);
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__shade {
+    opacity: 0.45;
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__bio {
+    opacity: 0.95;
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__sweep {
+    transform: translateX(1.25rem);
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__hidden {
+    opacity: 0;
+  }
+
+  .discover-card[data-revealed="true"] .discover-card__info {
+    max-height: 7rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  @keyframes heroReveal {
+    0% {
+      opacity: 0;
+      transform: translateY(28px);
+      filter: blur(12px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes heroFadeUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes heroZoom {
+    0% {
+      transform: scale(1.12);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes abyssScrollDot {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.72;
+    }
+    52% {
+      transform: translateY(0.68rem);
+      opacity: 1;
+    }
+  }
+
+  .hero-anim {
+    opacity: 0;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hero-reveal {
+    animation-name: heroReveal;
+    animation-duration: 1.1s;
+  }
+
+  .hero-fade {
+    animation-name: heroFadeUp;
+    animation-duration: 1s;
+  }
+
+  .hero-zoom {
+    animation: heroZoom 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-anim,
+    .hero-zoom,
+    .abyss-scroll-hint__dot {
+      animation: none;
+      opacity: 1;
+    }
+  }
+
+  @media (pointer: coarse), (hover: none) {
+    .backdrop-blur-xl {
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+  }
+}
+
+.font-playfair {
+  font-family: "Playfair Display", serif;
+}
