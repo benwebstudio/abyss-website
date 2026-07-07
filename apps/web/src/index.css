@@ -222,6 +222,15 @@
     animation: abyssScrollDot 1.35s ease-in-out infinite;
   }
 
+  .abyss-scroll-hint--video .abyss-scroll-hint__text {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .abyss-scroll-hint--video .abyss-scroll-hint__mouse {
+    border-color: rgba(224, 242, 254, 0.86);
+    background: rgba(224, 242, 254, 0.095);
+  }
+
   .discover-card[data-revealed="true"] {
     border-color: rgba(165, 243, 252, 0.55);
     box-shadow:

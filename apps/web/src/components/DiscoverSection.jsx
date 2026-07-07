@@ -71,6 +71,8 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
       !touchExperience;
     let scrollFrame = null;
     let cursorFrame = null;
+    let mobileCardFrame = null;
+    let cleanupTouchCardTracking = () => {};
     let currentX = -80;
     let currentY = -80;
     let targetX = -80;
@@ -148,8 +150,61 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
         card.dataset.revealed = 'false';
       });
 
+      const isMobileCardLayout = () =>
+        window.matchMedia('(max-width: 639px)').matches;
+
+      const renderMobileActiveCard = () => {
+        mobileCardFrame = null;
+        if (!isMobileCardLayout()) return;
+
+        const sectionBounds = section.getBoundingClientRect();
+        if (
+          sectionBounds.top > window.innerHeight * 0.9 ||
+          sectionBounds.bottom < window.innerHeight * 0.1
+        ) {
+          cards.forEach((card) => {
+            card.dataset.revealed = 'false';
+          });
+          return;
+        }
+
+        let activeIndex = 0;
+        let closestDistance = Number.POSITIVE_INFINITY;
+        const targetY = window.innerHeight * 0.52;
+
+        cards.forEach((card, index) => {
+          const bounds = card.getBoundingClientRect();
+          const isNearViewport =
+            bounds.top < window.innerHeight * 0.92 &&
+            bounds.bottom > window.innerHeight * 0.08;
+          const center = bounds.top + bounds.height * 0.5;
+          const distance = isNearViewport
+            ? Math.abs(center - targetY)
+            : Number.POSITIVE_INFINITY;
+
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            activeIndex = index;
+          }
+        });
+
+        cards.forEach((card, index) => {
+          card.dataset.revealed = index === activeIndex ? 'true' : 'false';
+        });
+      };
+
+      const requestMobileActiveCard = () => {
+        if (!isMobileCardLayout() || mobileCardFrame !== null) return;
+        mobileCardFrame = window.requestAnimationFrame(renderMobileActiveCard);
+      };
+
       revealObserver = new IntersectionObserver(
         (entries) => {
+          if (isMobileCardLayout()) {
+            requestMobileActiveCard();
+            return;
+          }
+
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
 
@@ -178,6 +233,21 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
       );
 
       cards.forEach((card) => revealObserver.observe(card));
+
+      if (isMobileCardLayout()) {
+        window.addEventListener('scroll', requestMobileActiveCard, { passive: true });
+        window.addEventListener('resize', requestMobileActiveCard);
+        requestMobileActiveCard();
+
+        cleanupTouchCardTracking = () => {
+          window.removeEventListener('scroll', requestMobileActiveCard);
+          window.removeEventListener('resize', requestMobileActiveCard);
+          if (mobileCardFrame !== null) {
+            window.cancelAnimationFrame(mobileCardFrame);
+            mobileCardFrame = null;
+          }
+        };
+      }
     }
 
     window.addEventListener('scroll', requestContactTransition, { passive: true });
@@ -193,6 +263,7 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
       section.removeEventListener('pointerleave', handlePointerLeave);
       section.removeEventListener('pointerover', handlePointerOver);
       section.style.cursor = '';
+      cleanupTouchCardTracking();
       if (revealObserver) revealObserver.disconnect();
       if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame);
       if (cursorFrame !== null) window.cancelAnimationFrame(cursorFrame);

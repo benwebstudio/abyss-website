@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 const VIDEO_SRC = '/video/ocean-descent-scrub.mp4';
+const AUDIO_SRC = '/video/ocean-descent-audio.mp4';
 const TRANSITION_OVERLAP = '100vh';
 const TRANSITION_FADE_AHEAD = 1.26;
 const END_FRAME_HOLD_MS = 900;
@@ -24,6 +25,7 @@ function ScrollVideoSection() {
   const sectionRef = useRef(null);
   const viewportRef = useRef(null);
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
   const returnShadeRef = useRef(null);
   const overlayRefs = useRef([]);
   const skipRef = useRef(null);
@@ -39,11 +41,13 @@ function ScrollVideoSection() {
   const lockedScrollYRef = useRef(0);
   const savedStylesRef = useRef(null);
   const reducedMotionRef = useRef(false);
+  const soundEnabledRef = useRef(false);
 
   useEffect(() => {
     const section = sectionRef.current;
     const viewport = viewportRef.current;
     const video = videoRef.current;
+    const audio = audioRef.current;
     const returnShade = returnShadeRef.current;
     const skip = skipRef.current;
     const scrollHint = scrollHintRef.current;
@@ -55,6 +59,7 @@ function ScrollVideoSection() {
       !section ||
       !viewport ||
       !video ||
+      !audio ||
       !returnShade ||
       !skip ||
       !scrollHint ||
@@ -72,6 +77,10 @@ function ScrollVideoSection() {
     reducedMotionRef.current = false;
     let playRequested = false;
     let isNavigationBypass = false;
+    audio.volume = 0.28;
+    audio.muted = true;
+    video.volume = 0.28;
+    video.muted = true;
 
     const setSkipVisible = (visible, label = 'Skip exploration ↓') => {
       skip.textContent = label;
@@ -81,10 +90,38 @@ function ScrollVideoSection() {
     };
 
     const setScrollHintVisible = (visible, opacity = visible ? 1 : 0) => {
-      scrollHint.style.opacity = String(opacity);
+      const boostedOpacity = visible ? Math.max(opacity, 0.82) : 0;
+      scrollHint.style.opacity = String(boostedOpacity);
       scrollHint.style.transform = visible
         ? 'translate3d(-50%, 0, 0)'
         : 'translate3d(-50%, 8px, 0)';
+    };
+
+    const syncAudioToVideo = () => {
+      if (!Number.isFinite(video.currentTime)) return;
+      if (Math.abs(audio.currentTime - video.currentTime) > 0.35) {
+        audio.currentTime = Math.max(0, video.currentTime);
+      }
+    };
+
+    const pauseAudio = () => {
+      audio.pause();
+      audio.muted = true;
+    };
+
+    const playAudioIfEnabled = () => {
+      if (!soundEnabledRef.current || hasFinishedRef.current) return;
+
+      syncAudioToVideo();
+      audio.muted = false;
+      audio.volume = 0.28;
+
+      const playPromise = audio.play();
+      if (playPromise) {
+        playPromise.catch(() => {
+          pauseAudio();
+        });
+      }
     };
 
     const renderTextCue = (cue, element, progress) => {
@@ -307,6 +344,7 @@ function ScrollVideoSection() {
       }
 
       video.pause();
+      pauseAudio();
       renderOverlays(1);
       setSkipVisible(false);
       setScrollHintVisible(true);
@@ -334,7 +372,9 @@ function ScrollVideoSection() {
       }
 
       video.pause();
+      pauseAudio();
       if (video.readyState >= 1) video.currentTime = 0;
+      if (audio.readyState >= 1) audio.currentTime = 0;
       hideOverlays();
       setSkipVisible(false);
       setScrollHintVisible(false);
@@ -354,6 +394,7 @@ function ScrollVideoSection() {
       const duration = durationRef.current || video.duration || 0;
       const progress = duration > 0 ? clamp(video.currentTime / duration) : 0;
       renderOverlays(progress);
+      if (soundEnabledRef.current && !video.paused) syncAudioToVideo();
 
       if (video.currentTime >= 2) setSkipVisible(true);
 
@@ -374,12 +415,24 @@ function ScrollVideoSection() {
       const playPromise = video.play();
       if (playPromise) {
         playPromise
-          .then(requestPlaybackFrame)
+          .then(() => {
+            requestPlaybackFrame();
+            playAudioIfEnabled();
+          })
           .catch(() => {
-            setSkipVisible(true, 'Continue ↓');
+            video.muted = true;
+            video.play()
+              .then(() => {
+                requestPlaybackFrame();
+                playAudioIfEnabled();
+              })
+              .catch(() => {
+                setSkipVisible(true, 'Continue ↓');
+              });
           });
       } else {
         requestPlaybackFrame();
+        playAudioIfEnabled();
       }
     };
 
@@ -420,7 +473,9 @@ function ScrollVideoSection() {
       clearDiscoverBlend();
       lockScroll();
 
+      video.muted = !soundEnabledRef.current;
       if (video.currentTime > 0.04) video.currentTime = 0;
+      if (audio.readyState >= 1) audio.currentTime = 0;
       waitForLettersToExit(window.performance.now());
     };
 
@@ -483,8 +538,12 @@ function ScrollVideoSection() {
 
       if (sectionTop > 0) {
         video.pause();
+        pauseAudio();
         if (video.readyState >= 1 && video.currentTime > 0.04) {
           video.currentTime = 0;
+        }
+        if (audio.readyState >= 1 && audio.currentTime > 0.04) {
+          audio.currentTime = 0;
         }
         hideOverlays();
         setSkipVisible(false);
@@ -523,7 +582,11 @@ function ScrollVideoSection() {
     const handleSkip = () => {
       const duration = durationRef.current || video.duration || 0;
       video.pause();
+      pauseAudio();
       if (duration > 0) video.currentTime = Math.max(duration - 0.04, 0);
+      if (duration > 0 && audio.readyState >= 1) {
+        audio.currentTime = Math.max(duration - 0.04, 0);
+      }
       renderOverlays(1);
       finishCinematic();
     };
@@ -540,9 +603,29 @@ function ScrollVideoSection() {
       isNavigationBypass = true;
       const duration = durationRef.current || video.duration || 0;
       video.pause();
+      pauseAudio();
       if (duration > 0) video.currentTime = Math.max(duration - 0.04, 0);
+      if (duration > 0 && audio.readyState >= 1) {
+        audio.currentTime = Math.max(duration - 0.04, 0);
+      }
       renderOverlays(1);
       finishCinematic();
+    };
+
+    const handleSoundChange = (event) => {
+      const enabled = Boolean(event.detail?.enabled);
+      soundEnabledRef.current = enabled;
+      video.muted = !enabled;
+
+      if (!enabled) {
+        pauseAudio();
+        return;
+      }
+
+      audio.muted = false;
+      if (hasStartedRef.current && !hasFinishedRef.current && !video.paused) {
+        playAudioIfEnabled();
+      }
     };
 
     const handleMotionPreferenceChange = (event) => {
@@ -557,6 +640,7 @@ function ScrollVideoSection() {
     video.addEventListener('ended', handleEnded);
     skip.addEventListener('click', handleSkip);
     window.addEventListener('abyss:navigate', handleSectionNavigation);
+    window.addEventListener('abyss:soundchange', handleSoundChange);
     motionQuery.addEventListener('change', handleMotionPreferenceChange);
 
     if (video.readyState >= 1) handleLoadedMetadata();
@@ -570,6 +654,7 @@ function ScrollVideoSection() {
       video.removeEventListener('ended', handleEnded);
       skip.removeEventListener('click', handleSkip);
       window.removeEventListener('abyss:navigate', handleSectionNavigation);
+      window.removeEventListener('abyss:soundchange', handleSoundChange);
       motionQuery.removeEventListener('change', handleMotionPreferenceChange);
       if (scrollFrameRef.current !== null) {
         cancelAnimationFrame(scrollFrameRef.current);
@@ -584,6 +669,7 @@ function ScrollVideoSection() {
         window.clearTimeout(finishTimerRef.current);
       }
       video.pause();
+      pauseAudio();
       unlockScroll();
       clearReturnBlend();
       clearDiscoverBlend();
@@ -607,6 +693,14 @@ function ScrollVideoSection() {
           playsInline
           preload="auto"
           disablePictureInPicture
+          aria-hidden="true"
+        />
+
+        <audio
+          ref={audioRef}
+          src={AUDIO_SRC}
+          preload="auto"
+          muted
           aria-hidden="true"
         />
 
@@ -652,7 +746,7 @@ function ScrollVideoSection() {
 
         <div
           ref={scrollHintRef}
-          className="abyss-scroll-hint absolute bottom-6 left-1/2 z-20 opacity-0 pointer-events-none"
+          className="abyss-scroll-hint abyss-scroll-hint--video absolute bottom-6 left-1/2 z-20 opacity-0 pointer-events-none"
           aria-hidden="true"
         >
           <span className="abyss-scroll-hint__text">
