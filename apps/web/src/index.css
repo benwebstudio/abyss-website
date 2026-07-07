@@ -4,6 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@property --hero-reveal-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 28%;
+}
+
+@property --hero-reveal-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 34%;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -306,6 +318,26 @@
     }
   }
 
+  @keyframes heroTouchRevealDrift {
+    0%,
+    100% {
+      --hero-reveal-x: 26%;
+      --hero-reveal-y: 32%;
+    }
+    27% {
+      --hero-reveal-x: 72%;
+      --hero-reveal-y: 45%;
+    }
+    52% {
+      --hero-reveal-x: 34%;
+      --hero-reveal-y: 68%;
+    }
+    76% {
+      --hero-reveal-x: 70%;
+      --hero-reveal-y: 25%;
+    }
+  }
+
   @keyframes abyssScrollDot {
     0%,
     100% {
@@ -362,6 +394,31 @@
     animation: heroZoom 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  .hero-touch-reveal {
+    --hero-reveal-radius: 182px;
+    display: none;
+    -webkit-mask-image: radial-gradient(
+      circle var(--hero-reveal-radius) at var(--hero-reveal-x) var(--hero-reveal-y),
+      black 0%,
+      black 40%,
+      rgba(0, 0, 0, 0.75) 60%,
+      rgba(0, 0, 0, 0.4) 75%,
+      rgba(0, 0, 0, 0.12) 88%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      circle var(--hero-reveal-radius) at var(--hero-reveal-x) var(--hero-reveal-y),
+      black 0%,
+      black 40%,
+      rgba(0, 0, 0, 0.75) 60%,
+      rgba(0, 0, 0, 0.4) 75%,
+      rgba(0, 0, 0, 0.12) 88%,
+      transparent 100%
+    );
+    animation: heroTouchRevealDrift 15.5s ease-in-out infinite;
+    will-change: --hero-reveal-x, --hero-reveal-y;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero-anim,
     .hero-zoom {
@@ -371,6 +428,14 @@
   }
 
   @media (pointer: coarse), (hover: none) {
+    .hero-pointer-reveal {
+      display: none;
+    }
+
+    .hero-touch-reveal {
+      display: block;
+    }
+
     .backdrop-blur-xl {
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);

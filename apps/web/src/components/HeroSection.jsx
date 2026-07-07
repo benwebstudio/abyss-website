@@ -8,7 +8,6 @@ import revealOceanImage from '../assets/reef-reveal.png';
 // Updated to receive compressed uiOpacity and overlayOpacity from the transition coordinator
 function HeroSection({ uiOpacity = 1, overlayOpacity = 0.1 }) {
   const [cursorPos, setCursorPos] = useState({ x: -999, y: -999 });
-  const [isTouchExperience, setIsTouchExperience] = useState(false);
   const mouseRef = useRef({ x: -999, y: -999 });
   const smoothRef = useRef({ x: -999, y: -999 });
   const rafRef = useRef(null);
@@ -16,9 +15,7 @@ function HeroSection({ uiOpacity = 1, overlayOpacity = 0.1 }) {
   useEffect(() => {
     const coarsePointer = window.matchMedia('(pointer: coarse)');
     const hoverPointer = window.matchMedia('(hover: hover)');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const prefersTouchExperience = coarsePointer.matches || !hoverPointer.matches;
-    setIsTouchExperience(prefersTouchExperience);
 
     const handlePointerMove = (e) => {
       if (prefersTouchExperience) return;
@@ -26,39 +23,11 @@ function HeroSection({ uiOpacity = 1, overlayOpacity = 0.1 }) {
     };
 
     if (prefersTouchExperience) {
-      if (reducedMotion.matches) {
-        setCursorPos({
-          x: window.innerWidth * 0.52,
-          y: window.innerHeight * 0.48,
-        });
-        return undefined;
-      }
-
-      const animateTouchReveal = (time) => {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const driftX =
-          Math.sin(time * 0.00012) * width * 0.2 +
-          Math.sin(time * 0.00031) * width * 0.035;
-        const driftY =
-          Math.cos(time * 0.000105) * height * 0.12 +
-          Math.sin(time * 0.00023) * height * 0.025;
-
-        setCursorPos({
-          x: width * 0.5 + driftX,
-          y: height * 0.49 + driftY,
-        });
-
-        rafRef.current = requestAnimationFrame(animateTouchReveal);
-      };
-
-      rafRef.current = requestAnimationFrame(animateTouchReveal);
-
-      return () => {
-        if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
-      };
+      setCursorPos({
+        x: window.innerWidth * 0.5,
+        y: window.innerHeight * 0.49,
+      });
+      return undefined;
     }
 
     const animate = () => {
@@ -103,7 +72,14 @@ function HeroSection({ uiOpacity = 1, overlayOpacity = 0.1 }) {
           image={revealOceanImage}
           cursorX={cursorPos.x}
           cursorY={cursorPos.y}
-          radius={isTouchExperience ? 182 : undefined}
+          className="hero-pointer-reveal"
+        />
+
+        <RevealLayer
+          image={revealOceanImage}
+          cursorX={0}
+          cursorY={0}
+          animatedTouch
         />
 
         {/* Dynamic Dark Ocean Overlay appearing faster based on scroll */}
