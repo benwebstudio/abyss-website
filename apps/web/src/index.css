@@ -436,6 +436,12 @@
       display: block;
     }
 
+    .discover-card {
+      pointer-events: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: pan-y;
+    }
+
     .backdrop-blur-xl {
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);

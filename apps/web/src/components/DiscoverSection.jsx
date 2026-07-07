@@ -81,8 +81,11 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
     const renderContactTransition = () => {
       scrollFrame = null;
       const contactTop = contact.getBoundingClientRect().top;
+      const transitionStart = touchExperience
+        ? window.innerHeight * 0.8
+        : window.innerHeight;
       const progress = smoothstep(
-        clamp((window.innerHeight - contactTop) / (window.innerHeight * 0.78))
+        clamp((transitionStart - contactTop) / (window.innerHeight * 0.78))
       );
       const reduceAnimations = reducedMotion.matches;
 
@@ -148,6 +151,8 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
     if (touchExperience && cards.length > 0) {
       cards.forEach((card) => {
         card.dataset.revealed = 'false';
+        card.removeAttribute('tabindex');
+        card.setAttribute('aria-disabled', 'true');
       });
 
       const isMobileCardLayout = () =>
