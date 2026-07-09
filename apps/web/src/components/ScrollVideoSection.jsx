@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react';
 const VIDEO_SRC = '/video/ocean-descent-scrub.mp4';
 const TRANSITION_OVERLAP = '100vh';
 const TRANSITION_FADE_AHEAD = 1.26;
+const VIDEO_START_AHEAD = 0.05;
 const END_FRAME_HOLD_MS = 900;
 const FINAL_FRAME_SHADE = 0.24;
 
@@ -30,7 +31,6 @@ function ScrollVideoSection() {
   const scrollHintRef = useRef(null);
   const scrollFrameRef = useRef(null);
   const playbackFrameRef = useRef(null);
-  const letterWaitFrameRef = useRef(null);
   const finishTimerRef = useRef(null);
   const durationRef = useRef(0);
   const hasStartedRef = useRef(false);
@@ -72,6 +72,8 @@ function ScrollVideoSection() {
     reducedMotionRef.current = false;
     let playRequested = false;
     let isNavigationBypass = false;
+    let lastScrollY = window.scrollY;
+    let isMovingTowardVideo = true;
     video.muted = true;
 
     const setSkipVisible = (visible, label = 'Skip exploration ↓') => {
@@ -303,10 +305,6 @@ function ScrollVideoSection() {
         cancelAnimationFrame(playbackFrameRef.current);
         playbackFrameRef.current = null;
       }
-      if (letterWaitFrameRef.current !== null) {
-        cancelAnimationFrame(letterWaitFrameRef.current);
-        letterWaitFrameRef.current = null;
-      }
 
       video.pause();
       renderOverlays(1);
@@ -330,11 +328,6 @@ function ScrollVideoSection() {
         cancelAnimationFrame(playbackFrameRef.current);
         playbackFrameRef.current = null;
       }
-      if (letterWaitFrameRef.current !== null) {
-        cancelAnimationFrame(letterWaitFrameRef.current);
-        letterWaitFrameRef.current = null;
-      }
-
       video.pause();
       if (video.readyState >= 1) video.currentTime = 0;
       hideOverlays();
@@ -394,29 +387,9 @@ function ScrollVideoSection() {
       }
     };
 
-    const waitForLettersToExit = (startedAt) => {
-      letterWaitFrameRef.current = null;
-      if (hasFinishedRef.current) return;
-
-      const letters = [...document.querySelectorAll('h2 span')];
-      const allLettersHaveExited = letters.length === 0 || letters.every((letter) => {
-        const bounds = letter.getBoundingClientRect();
-        return bounds.top >= window.innerHeight || bounds.bottom <= 0;
-      });
-      const waitLimitReached = window.performance.now() - startedAt >= 700;
-
-      if (allLettersHaveExited || waitLimitReached) {
-        beginPlayback();
-        return;
-      }
-
-      letterWaitFrameRef.current = requestAnimationFrame(() => {
-        waitForLettersToExit(startedAt);
-      });
-    };
-
     const startCinematic = () => {
       if (
+        !isMovingTowardVideo ||
         hasStartedRef.current ||
         hasFinishedRef.current
       ) {
@@ -433,7 +406,7 @@ function ScrollVideoSection() {
 
       video.muted = true;
       if (video.currentTime > 0.04) video.currentTime = 0;
-      waitForLettersToExit(window.performance.now());
+      beginPlayback();
     };
 
     const updateTransition = () => {
@@ -494,6 +467,12 @@ function ScrollVideoSection() {
       viewport.style.opacity = String(transitionOpacity);
 
       if (sectionTop > 0) {
+        if (isMovingTowardVideo && sectionTop <= viewportHeight * VIDEO_START_AHEAD) {
+          viewport.style.opacity = '1';
+          startCinematic();
+          return;
+        }
+
         video.pause();
         if (video.readyState >= 1 && video.currentTime > 0.04) {
           video.currentTime = 0;
@@ -510,6 +489,15 @@ function ScrollVideoSection() {
     const requestTransitionUpdate = () => {
       if (scrollFrameRef.current !== null || isScrollLockedRef.current) return;
       scrollFrameRef.current = requestAnimationFrame(updateTransition);
+    };
+
+    const handleScroll = () => {
+      const nextScrollY = window.scrollY;
+      if (nextScrollY !== lastScrollY) {
+        isMovingTowardVideo = nextScrollY > lastScrollY;
+        lastScrollY = nextScrollY;
+      }
+      requestTransitionUpdate();
     };
 
     const handleLoadedMetadata = () => {
@@ -562,20 +550,20 @@ function ScrollVideoSection() {
       requestTransitionUpdate();
     };
 
-    window.addEventListener('scroll', requestTransitionUpdate, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', requestTransitionUpdate);
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('playing', handlePlaying);
     video.addEventListener('ended', handleEnded);
     skip.addEventListener('click', handleSkip);
-    window.addEventListener('abyss:navigate', handleSectionNavigation);
+      window.addEventListener('abyss:navigate', handleSectionNavigation);
     motionQuery.addEventListener('change', handleMotionPreferenceChange);
 
     if (video.readyState >= 1) handleLoadedMetadata();
     requestTransitionUpdate();
 
     return () => {
-      window.removeEventListener('scroll', requestTransitionUpdate);
+      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', requestTransitionUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('playing', handlePlaying);
@@ -588,9 +576,6 @@ function ScrollVideoSection() {
       }
       if (playbackFrameRef.current !== null) {
         cancelAnimationFrame(playbackFrameRef.current);
-      }
-      if (letterWaitFrameRef.current !== null) {
-        cancelAnimationFrame(letterWaitFrameRef.current);
       }
       if (finishTimerRef.current !== null) {
         window.clearTimeout(finishTimerRef.current);

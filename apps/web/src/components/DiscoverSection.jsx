@@ -317,7 +317,7 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
       <section
         ref={setSectionRef}
         data-discover-section
-        className="relative z-[70] min-h-screen w-full overflow-clip px-4 pb-[35vh] pt-10 sm:px-6 sm:pt-12 lg:h-[250vh] lg:px-10 lg:pb-0 lg:pt-0 xl:px-12"
+        className="relative z-[70] min-h-screen w-full overflow-clip px-4 pb-[35vh] pt-10 sm:px-6 sm:pt-12 lg:h-[230vh] lg:px-10 lg:pb-0 lg:pt-0 xl:px-12"
         aria-labelledby="discover-title"
       >
         <div

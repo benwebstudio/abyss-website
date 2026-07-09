@@ -41,6 +41,7 @@ function CharacterAnimation({ char, index, scrollProgress }) {
 
   return (
     <motion.span
+      data-go-deeper-letter
       style={{
         opacity,
         scale,
