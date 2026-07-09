@@ -32,7 +32,7 @@ function TransitionSection() {
   );
 
   return (
-    <div ref={containerRef} className="relative w-full h-[325vh] bg-black">
+    <div ref={containerRef} data-transition-section className="relative w-full h-[325vh] bg-black">
       {/* Sticky viewport wrapper */}
       <div className="sticky top-0 left-0 w-full h-screen overflow-hidden">
         

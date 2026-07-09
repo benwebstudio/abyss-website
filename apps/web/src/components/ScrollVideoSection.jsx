@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 const VIDEO_SRC = '/video/ocean-descent-scrub.mp4';
 const TRANSITION_OVERLAP = '100vh';
 const TRANSITION_FADE_AHEAD = 1.26;
-const VIDEO_START_AHEAD = 0.05;
+const GO_DEEPER_START_PROGRESS = 0.86;
 const END_FRAME_HOLD_MS = 900;
 const FINAL_FRAME_SHADE = 0.24;
 
@@ -47,6 +47,7 @@ function ScrollVideoSection() {
     const returnShade = returnShadeRef.current;
     const skip = skipRef.current;
     const scrollHint = scrollHintRef.current;
+    const transitionSection = document.querySelector('[data-transition-section]');
     const goDeeperLayer = document.querySelector('[data-go-deeper-layer]');
     const discoverBackdrop = document.querySelector('[data-discover-backdrop]');
     const discoverContent = document.querySelector('[data-discover-content]');
@@ -387,6 +388,40 @@ function ScrollVideoSection() {
       }
     };
 
+    const getGoDeeperProgress = (viewportHeight) => {
+      if (!transitionSection) return null;
+
+      const bounds = transitionSection.getBoundingClientRect();
+      const scrollableDistance = bounds.height - viewportHeight;
+      if (scrollableDistance <= 0) return null;
+
+      return clamp(-bounds.top / scrollableDistance);
+    };
+
+    const haveGoDeeperLettersExited = () => {
+      const letters = [...document.querySelectorAll('[data-go-deeper-letter]')];
+      if (letters.length === 0) return false;
+
+      return letters.every((letter) => {
+        const bounds = letter.getBoundingClientRect();
+        return bounds.top >= window.innerHeight || bounds.bottom <= 0;
+      });
+    };
+
+    const shouldStartCinematic = (sectionTop, viewportHeight) => {
+      if (!isMovingTowardVideo || hasStartedRef.current || hasFinishedRef.current) {
+        return false;
+      }
+
+      const goDeeperProgress = getGoDeeperProgress(viewportHeight);
+
+      return (
+        haveGoDeeperLettersExited() ||
+        (goDeeperProgress !== null && goDeeperProgress >= GO_DEEPER_START_PROGRESS) ||
+        sectionTop <= 0
+      );
+    };
+
     const startCinematic = () => {
       if (
         !isMovingTowardVideo ||
@@ -402,6 +437,7 @@ function ScrollVideoSection() {
       setSkipVisible(false);
       setScrollHintVisible(false);
       clearDiscoverBlend();
+      if (goDeeperLayer) goDeeperLayer.style.opacity = '0';
       lockScroll();
 
       video.muted = true;
@@ -466,13 +502,13 @@ function ScrollVideoSection() {
 
       viewport.style.opacity = String(transitionOpacity);
 
-      if (sectionTop > 0) {
-        if (isMovingTowardVideo && sectionTop <= viewportHeight * VIDEO_START_AHEAD) {
-          viewport.style.opacity = '1';
-          startCinematic();
-          return;
-        }
+      if (shouldStartCinematic(sectionTop, viewportHeight)) {
+        viewport.style.opacity = '1';
+        startCinematic();
+        return;
+      }
 
+      if (sectionTop > 0) {
         video.pause();
         if (video.readyState >= 1 && video.currentTime > 0.04) {
           video.currentTime = 0;
