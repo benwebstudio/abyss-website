@@ -83,6 +83,7 @@ function ContactSection() {
       const panelProgress = smoothstep(clamp((progress - 0.22) / 0.56));
       const statsProgress = smoothstep(clamp((progress - 0.58) / 0.42));
 
+      section.style.pointerEvents = progress >= 0.62 ? 'auto' : 'none';
       backdrop.style.opacity = String(smoothstep(clamp(progress / 0.68)));
       setStage(intro, introProgress, 34, 8);
       setStage(panel, panelProgress, 44, 10);
@@ -103,6 +104,7 @@ function ContactSection() {
       window.removeEventListener('scroll', requestRender);
       window.removeEventListener('resize', requestRender);
       reducedMotion.removeEventListener('change', requestRender);
+      section.style.pointerEvents = '';
       if (frame !== null) window.cancelAnimationFrame(frame);
       if (sentTimerRef.current !== null) window.clearTimeout(sentTimerRef.current);
     };

@@ -77,6 +77,7 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
     let currentY = -80;
     let targetX = -80;
     let targetY = -80;
+    let discoverInteractive = true;
 
     const renderContactTransition = () => {
       scrollFrame = null;
@@ -94,8 +95,15 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
       stage.style.transform = reduceAnimations
         ? 'translate3d(0, 0, 0)'
         : `translate3d(0, ${-progress * 26}px, 0)`;
-      stage.style.pointerEvents = progress > 0.08 ? 'none' : 'auto';
-      if (progress > 0.04) scanner.style.opacity = '0';
+
+      if (progress >= 0.62) discoverInteractive = false;
+      else if (progress <= 0.48) discoverInteractive = true;
+
+      stage.style.pointerEvents = discoverInteractive ? 'auto' : 'none';
+      if (!discoverInteractive) {
+        scanner.style.opacity = '0';
+        scanner.dataset.active = 'false';
+      }
     };
 
     const requestContactTransition = () => {
@@ -120,6 +128,11 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
     };
 
     const handlePointerMove = (event) => {
+      if (!discoverInteractive) {
+        scanner.style.opacity = '0';
+        return;
+      }
+
       targetX = event.clientX;
       targetY = event.clientY;
       scanner.style.opacity = '1';
@@ -134,6 +147,11 @@ const DiscoverSection = forwardRef(function DiscoverSection(_, forwardedRef) {
     };
 
     const handlePointerOver = (event) => {
+      if (!discoverInteractive) {
+        scanner.dataset.active = 'false';
+        return;
+      }
+
       scanner.dataset.active = event.target.closest('[data-discover-card]')
         ? 'true'
         : 'false';
